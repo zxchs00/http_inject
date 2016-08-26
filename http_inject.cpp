@@ -82,7 +82,7 @@ int calc_checksum_TCP(u_char* packet, unsigned int len) {
 	packet[TCP_chksum] = 0x00;
 	packet[TCP_chksum + 1] = 0x00;
 
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 14; i++) {
 		checksum += c_packet[(ETH_len + IP_len) / 2 + i];
 	}
 	for (i = 0; i < 4; i++) {
@@ -94,7 +94,6 @@ int calc_checksum_TCP(u_char* packet, unsigned int len) {
 	checksum = (checksum >> 16) + (checksum & 0xffff);
 	checksum += (checksum >> 16);
 	finalchk = (~checksum & 0xffff);
-	finalchk += htons(0x8);
 	packet[TCP_chksum] = ((u_char*)&finalchk)[0];
 	packet[TCP_chksum + 1] = ((u_char*)&finalchk)[1];
 
@@ -214,8 +213,11 @@ int main(void) {
 			for (i = 0; i < (ETH_len + IP_len)+4; i++) {
 				block_data[i] = pkt_data[i];
 			}
+			block_data[ETH_len + 1] = 0x44;
 			block_data[ETH_len + 2] = 0x00;
-			block_data[ETH_len + 3] = 0x28;
+			block_data[ETH_len + 3] = 0x30;
+			block_data[ETH_len + 4] = 0x77;
+			block_data[ETH_len + 5] = 0xbf;
 			calc_checksum_IP(block_data);
 			// sequence
 			*(unsigned int*)(&block_data[i]) = htonl(ntohl(*(unsigned int*)(&pkt_data[i])) + (header->caplen - (ETH_len + IP_len + TCP_len)));
@@ -257,8 +259,11 @@ int main(void) {
 				block_data[ETH_len + 12 + i] = pkt_data[ETH_len + 16 + i];
 				block_data[ETH_len + 16 + i] = pkt_data[ETH_len + 12 + i];
 			}
+			block_data[ETH_len + 1] = 0x44;
 			block_data[ETH_len + 2] = 0x00;
-			block_data[ETH_len + 3] = 0x28;
+			block_data[ETH_len + 3] = 0x30;
+			block_data[ETH_len + 4] = 0x77;
+			block_data[ETH_len + 5] = 0xbf;
 			calc_checksum_IP(block_data);
 				// port change
 			for (i = 0; i < 2; i++) {
